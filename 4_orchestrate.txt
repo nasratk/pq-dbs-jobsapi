@@ -1,0 +1,16 @@
+Sub OrchestrateDatabricksJob()
+    ' Refresh the query to trigger the notebook and get jobRunID
+    ThisWorkbook.RefreshAll
+    Application.Wait (Now + TimeValue("0:00:10"))  ' Wait 10 seconds
+
+    ' Loop until job status is SUCCESS
+    Dim status As String
+    Do
+        ThisWorkbook.Connections("CheckJobStatus").Refresh
+        Application.Wait (Now + TimeValue("0:00:10"))  ' Wait 10 seconds
+        status = ThisWorkbook.Sheets("StatusSheet").Range("B2").Value  ' Adjust cell reference
+    Loop Until status = "SUCCESS"
+
+    ' Refresh query to load final output
+    ThisWorkbook.Connections("LoadOutputData").Refresh
+End Sub
