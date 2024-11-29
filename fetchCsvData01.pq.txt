@@ -1,0 +1,25 @@
+let
+    // Retrieve the csv_path dynamically from the first query
+    csvPath = csvPath01,
+
+    // Format the csv path
+    formatCsvPath = Text.Replace(csvPath, "dbfs:/", "/"),
+
+    // Define DBFS API URL for reading the CSV file
+    dbfsReadUrl = rootUrl & "/api/2.0/dbfs/read?path=" & formatCsvPath,
+    headers = [
+        Authorization = "Bearer " & pat
+    ],
+
+    // Fetch the CSV file content from DBFS API
+    response = Web.Contents(dbfsReadUrl, [Headers = headers, ManualStatusHandling={200}]),
+    
+    // Decode the base64-encoded content from DBFS API
+    csvContent = Binary.FromText(Json.Document(response)[data], BinaryEncoding.Base64),
+    
+    // Convert the CSV content into a Power Query table
+    csvAsTable = Csv.Document(csvContent, [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+    
+    promotedHeaders = Table.PromoteHeaders(csvAsTable, [PromoteAllScalars=true])
+in
+    promotedHeaders
